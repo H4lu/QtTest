@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->networkManager = new QNetworkAccessManager();
     this->networkManager->connectToHostEncrypted("https://chain.so/api/v2/");
+    txData = new QVector<Address>;
 }
 
 MainWindow::~MainWindow()
@@ -82,14 +83,14 @@ void MainWindow::onResult(QNetworkReply *reply)
 void MainWindow::on_pushButton_2_clicked()
 {
     qDebug()<<"on button2 clicked!";
-    QString adrText;
     adrText = ui->lineEdit->text();
     Jsonparser *q1 = new Jsonparser(this);
-    q1->getTX(adrText,this);
+    q1->getTXR(adrText,this);
 
 }
-void MainWindow::onTX(QVector<Address> *temp)
-{   qDebug()<<"on tX";
+void MainWindow::onTXR(QVector<Address> *temp)
+{
+    qDebug()<<"on tXR";
     for (int i = 0; i < temp->size(); ++i)
     {
         qDebug()<<temp->at(i).tx;
@@ -97,5 +98,47 @@ void MainWindow::onTX(QVector<Address> *temp)
         qDebug()<<temp->at(i).inout;
         qDebug()<<temp->at(i).val;
 
+        Address nextA;
+        nextA.tx=temp->at(i).tx;
+        nextA.val=temp->at(i).val;
+        nextA.time=temp->at(i).time;
+        nextA.inout = temp->at(i).inout;
+
+        txData->append(nextA);
     }
+    Jsonparser *q2 = new Jsonparser(this);
+    q2->getTXS(adrText,this);
+}
+
+
+void MainWindow::onTXS(QVector<Address> *temp)
+{
+    qDebug()<<"on tXS";
+    for (int i = 0; i < temp->size(); ++i)
+    {
+        qDebug()<<temp->at(i).tx;
+        qDebug()<<temp->at(i).time;
+        qDebug()<<temp->at(i).inout;
+        qDebug()<<temp->at(i).val;
+
+        Address next;
+        next.tx=temp->at(i).tx;
+        next.val=temp->at(i).val;
+        next.time=temp->at(i).time;
+        next.inout = temp->at(i).inout;
+        int n=0;
+        for(int j = 0; j<txData->size(); j++)
+        {
+            if(txData->at(j).tx == next.tx)
+            {
+                n=1;
+            }
+        }
+
+        if(n==0)
+        {
+            txData->append(next);
+        }
+    }
+
 }

@@ -27,13 +27,15 @@ private slots:
     void onResult(QNetworkReply *reply);
     void on_pushButton_2_clicked();
 public slots:
-    void onTX(QVector<Address> *temp);
+    void onTXR(QVector<Address> *temp);
+    void onTXS(QVector<Address> *temp);
 
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *networkManager;
-    QVector<Address*> VData;
-
+    QVector<Address> AData;
+    QVector<Address> *txData;
+    QString adrText;
 };
 
 #endif // MAINWINDOW_H

@@ -15,16 +15,20 @@ class Jsonparser : public QObject
 public:
     explicit Jsonparser(QObject *parent = nullptr);
 
-    void getTX(QString findAddress, MainWindow *window);
-    void getTR(QVector<Address> *temp, QVector<Address> *data);
+    void getTXR(QString findAddress, MainWindow *window);
+    void getTXS(QString findAddress, MainWindow *window);
+ //   void getTA(Address *tx, MainWindow *window);
 
 
 public slots:
-    void onResultTX(QNetworkReply *reply);
-    //void onResultTA(QNetworkReply *reply);
+    void onResultTXR(QNetworkReply *reply);
+    void onResultTXS(QNetworkReply *reply);
+  //  void onResultTA(QNetworkReply *reply);
 
 signals:
-    void sigTX(QVector<Address> *temp);
+    void sigTXR(QVector<Address> *temp);
+    void sigTXS(QVector<Address> *temp);
+ //   void sigTA(QVector<Address> *temp);
 private:
     QNetworkAccessManager *manager;
 };

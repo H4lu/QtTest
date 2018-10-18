@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -9,9 +10,12 @@
 #include <QUrl>
 #include <QDebug>
 #include <QVector>
-#include "jsonparser.h"
 
-class Address;
+#include <QTimer>
+#include <jsonparser.h>
+
+
+QGraphicsRectItem *rectangle;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,7 +25,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->networkManager = new QNetworkAccessManager();
     this->networkManager->connectToHostEncrypted("https://chain.so/api/v2/");
-    txData = new QVector<Address>;
+    // txData = new QVector<QString>;
+    numTX=0;
+    curTX =0;
+
+    QGraphicsScene *sceneIn = new QGraphicsScene(this);
+    sceneIn->setItemIndexMethod(QGraphicsScene::NoIndex);
+    sceneIn->setSceneRect(0, 0, 400, 400);
+    ui->graphicsViewIN->setScene(sceneIn);
+    ui->graphicsViewIN->setCacheMode(QGraphicsView::CacheBackground);
+    ui->graphicsViewIN->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    ui->graphicsViewIN->setRenderHint(QPainter::Antialiasing);
 }
 
 MainWindow::~MainWindow()
@@ -29,107 +43,47 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 void MainWindow::on_pushButton_clicked()
 {
-    qDebug()<<"on button clicked!";
-    QString adrText;
-    adrText = ui->lineEdit->text();
-    //QString url ="https://chain.so/api/v2/get_address_balance/BTC/";
-    QString url ="https://chain.so/api/v2/get_tx_received/BTC/";
-    // Connect networkManager response to the handler
-    connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onResult);
-    // We get the data, namely JSON file from a site on a particular url
-    networkManager->get(QNetworkRequest(QUrl(url.append(adrText))));
-}
-
-void MainWindow::onResult(QNetworkReply *reply)
-{
-    qDebug()<<"on RESUTL!";
-    // If there are no errors
-    if(!reply->error()){
-        qDebug()<<"mo ERRRORS!!";
-        // So create an object Json Document, by reading into it all the data from the response
-        QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
-
-        // Taking from the document root object
-        QJsonObject root = document.object();
-
-        /* We find the object "departament", which is the very first in the root object.
-         * Use the keys() method gets a list of all objects and the first index
-         * Take away the name of the object on which we obtain its value
-         * */
-        for(QString key : root.keys()) {
-            ui->textEdit->append(key);
-        }
-        //ui->textEdit->append(root.keys().at(0) + ": " + root.value(root.keys().at(0)).toString());
-
-        // The second value prescribe line
-        QJsonValue jv = root.value("data");
-
-        // If the value is an array, ...
-
-        // ... then pick from an array of properties
-        QJsonObject ja = jv.toObject();
-
-        // Taking the values of the properties and last name by adding them to textEdit
-        ui->textEdit->append(ja.value("network").toString());
-        ui->textEdit->append(ja.value("address").toString());
-        ui->textEdit->append(ja.value("confirmed_balance").toString());
-        ui->textEdit->append(ja.value("unconfirmed_balance").toString());
-    }
-    reply->deleteLater();
-}
-
-void MainWindow::on_pushButton_2_clicked()
-{
+    Jsonparser *jsp = new Jsonparser();
     qDebug()<<"on button2 clicked!";
     adrText = ui->lineEdit->text();
-    Jsonparser *q1 = new Jsonparser(this);
-    q1->getTXR(adrText,this);
+    jsp->getTXR(adrText,this);
 
 }
-void MainWindow::onTXR(QVector<Address> *temp)
+void MainWindow::onTXR(QVector<QString> *temp)
 {
+    Jsonparser *jsp = new Jsonparser();
     qDebug()<<"on tXR";
     for (int i = 0; i < temp->size(); ++i)
     {
-        qDebug()<<temp->at(i).tx;
-        qDebug()<<temp->at(i).time;
-        qDebug()<<temp->at(i).inout;
-        qDebug()<<temp->at(i).val;
+        qDebug()<<temp->at(i);
 
-        Address nextA;
-        nextA.tx=temp->at(i).tx;
-        nextA.val=temp->at(i).val;
-        nextA.time=temp->at(i).time;
-        nextA.inout = temp->at(i).inout;
-
-        txData->append(nextA);
+        txData.append(temp->at(i));
     }
-    Jsonparser *q2 = new Jsonparser(this);
-    q2->getTXS(adrText,this);
+    QThread timer;
+    timer.sleep(2);
+    jsp->getTXS(adrText,this);
 }
 
 
-void MainWindow::onTXS(QVector<Address> *temp)
+void MainWindow::onTXS(QVector<QString> *temp)
 {
+    Jsonparser *jsp = new Jsonparser();
     qDebug()<<"on tXS";
     for (int i = 0; i < temp->size(); ++i)
     {
-        qDebug()<<temp->at(i).tx;
-        qDebug()<<temp->at(i).time;
-        qDebug()<<temp->at(i).inout;
-        qDebug()<<temp->at(i).val;
+        qDebug()<<temp->at(i);
 
-        Address next;
-        next.tx=temp->at(i).tx;
-        next.val=temp->at(i).val;
-        next.time=temp->at(i).time;
-        next.inout = temp->at(i).inout;
+
+        QString next;
+        next=temp->at(i);
+
         int n=0;
-        for(int j = 0; j<txData->size(); j++)
+        for(int j = 0; j<txData.size(); j++)
         {
-            if(txData->at(j).tx == next.tx)
+            if(txData.at(j) == next)
             {
                 n=1;
             }
@@ -137,8 +91,127 @@ void MainWindow::onTXS(QVector<Address> *temp)
 
         if(n==0)
         {
-            txData->append(next);
+            txData.append(next);
+        }
+    }
+    numTX = txData.size();
+
+    if(numTX > 0)
+    {
+        QThread timer;
+        timer.sleep(2);
+        jsp->getTA(adrText, txData.at(curTX), this);
+        curTX++;
+    }
+
+}
+
+
+void MainWindow::onTA(QVector<QString> *tempMyWallet, QVector<QString> *adr, bool inout, QVector<qulonglong> *sum, int date)
+{
+
+    Jsonparser *jsp = new Jsonparser();
+    qDebug()<<"on TA";
+    qDebug()<<"MyWallet";
+    if(!inout)
+    {
+        for(int i=0; i<tempMyWallet->size(); i++)
+        {
+            int inWallet = 0;
+            for(int j=0; j<myWallet.size(); j++)
+            {
+                if(myWallet.at(j) == tempMyWallet->at(i))
+                {
+                    inWallet =1;
+                }
+            }
+            if(inWallet == 0)
+            {
+                myWallet.append(tempMyWallet->at(i));
+            }
+        }
+        wallet tempinoutWallet;
+        for(int i=0; i<adr->size(); i++)
+        {
+            tempinoutWallet.adr[0] = adr->at(i);
+            tempinoutWallet.sum = sum->at(i);
+            tempinoutWallet.date=date;
+            tempinoutWallet.inout = false;
+         //   tempinoutWallet.rectangle = создать сцены и прямоугольники с подписями в них;
+            inoutWallet.append(tempinoutWallet);
+        }
+    }else
+    {
+        wallet tempinoutWallet;
+        for(int i=0; i<tempMyWallet->size(); i++)
+        {
+            tempinoutWallet.adr[i] = tempMyWallet->at(i);
+            tempinoutWallet.sum = sum->at(0);
+            tempinoutWallet.date=date;
+            tempinoutWallet.inout = true;
+            //tempinoutWallet.rectangle = создать сцены и прямоугольники с подписями в них;
+            inoutWallet.append(tempinoutWallet);
         }
     }
 
+
+    for (int i = 0; i < tempMyWallet->size(); ++i)
+    {
+        qDebug()<<tempMyWallet->at(i);
+    }
+    qDebug()<<"adr";
+    for (int i = 0; i < adr->size(); ++i)
+    {
+        qDebug()<<adr->at(i);
+    }
+
+    qDebug()<<"inout";
+    qDebug()<<inout;
+    qDebug()<<"sum";
+    qDebug()<<sum;
+    qDebug()<<"date";
+    qDebug()<<date;
+
+
+
+    if(curTX < numTX)
+    {
+        QThread timer;
+        timer.sleep(6);
+        jsp->getTA(adrText, txData.at(curTX), this);
+        curTX++;
+    }
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    QGraphicsScene *scene = new QGraphicsScene(this);
+    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene->setSceneRect(0, 0, 400, 400);
+  //  ui->graphicsView->setScene(scene);
+    //ui->graphicsView->setCacheMode(QGraphicsView::CacheBackground);
+    //ui->graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    //ui->graphicsView->setRenderHint(QPainter::Antialiasing);
+    //ui->graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    //ui->graphicsView->scale(qreal(0.8), qreal(0.8));
+    //ui->graphicsView->setMinimumSize(400, 400);
+
+    QBrush greenBrush(Qt::green);
+    QPen outlinePen(Qt::black);
+    outlinePen.setWidth(2);
+
+    rectangle = scene->addRect(100,0,80,100,outlinePen, greenBrush);
+    rectangle->setFlag(QGraphicsItem::ItemIsSelectable, true);
+
+}
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    qDebug()<<"double";
+
+    if(rectangle->isSelected())
+    {
+        qDebug()<<"if";
+        rectangle->setOpacity(0.5);
+        rectangle->setSelected(false);
+    }
 }

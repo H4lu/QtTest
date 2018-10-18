@@ -27,12 +27,10 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    address.cpp \
     jsonparser.cpp
 
 HEADERS += \
         mainwindow.h \
-    address.h \
     jsonparser.h
 
 FORMS += \

@@ -7,30 +7,34 @@
 #include <QSsl>
 #include "mainwindow.h"
 
-#include "address.h"
 
 class Jsonparser : public QObject
 {
     Q_OBJECT
+
+private:
+
+    QString findAdr;
+
+    QNetworkAccessManager *manager;
 public:
     explicit Jsonparser(QObject *parent = nullptr);
 
     void getTXR(QString findAddress, MainWindow *window);
     void getTXS(QString findAddress, MainWindow *window);
- //   void getTA(Address *tx, MainWindow *window);
+    void getTA(QString findAddress, QString trans, MainWindow *window);
 
 
 public slots:
     void onResultTXR(QNetworkReply *reply);
     void onResultTXS(QNetworkReply *reply);
-  //  void onResultTA(QNetworkReply *reply);
+    void onResultTA(QNetworkReply *reply);
 
 signals:
-    void sigTXR(QVector<Address> *temp);
-    void sigTXS(QVector<Address> *temp);
- //   void sigTA(QVector<Address> *temp);
-private:
-    QNetworkAccessManager *manager;
+    void sigTXR(QVector<QString> *temp);
+    void sigTXS(QVector<QString> *temp);
+    void sigTA(QVector<QString> *tempMyWallet, QVector<QString> *adr, bool inout, QVector<qulonglong> *sum, int date);
+
 };
 
 

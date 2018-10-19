@@ -1,0 +1,60 @@
+#include "mapmodel.h"
+
+MapModel::MapModel(QObject *parent) : QAbstractTableModel(parent)
+{
+    map6 = nullptr;
+}
+
+int MapModel::rowCount(const QModelIndex& parent) const
+{
+    if(map6)
+        return map6->count();
+    return 0;
+}
+
+int MapModel::columnCount(const QModelIndex& parent) const
+{
+    return 3;
+}
+
+QVariant MapModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role != Qt::DisplayRole)
+           return QVariant();
+
+    if (orientation == Qt::Horizontal)
+    {
+        switch (section)
+        {
+            case 0:
+                return QString("ID_Device");
+
+            case 1:
+                return QString("Number of Messages");
+
+            default:
+                return QVariant();
+        }
+    }
+    return QVariant();
+}
+
+QVariant MapModel::data(const QModelIndex& index, int role) const
+{
+    if(!map6)
+        return QVariant();
+    if(index.row() < 0 || index.row() >= map6->count() || role != Qt::DisplayRole)
+    {
+        return QVariant();
+    }
+
+    if(index.column() == 0)
+    {
+        return map6->keys().at(index.row());
+    }
+    if(index.column() == 1)
+    {
+        return map6->values().at(index.row());
+    }
+    return QVariant();
+}

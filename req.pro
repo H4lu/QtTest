@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    jsonparser.cpp
+    jsonparser.cpp \
+    mapmodel.cpp
 
 HEADERS += \
         mainwindow.h \
-    jsonparser.h
+    jsonparser.h \
+    mapmodel.h
 
 FORMS += \
         mainwindow.ui

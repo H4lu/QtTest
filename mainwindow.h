@@ -7,12 +7,12 @@
 #include <QSslSocket>
 #include <QSsl>
 #include <QVector>
-#include <QGraphicsView>
-#include <QGraphicsItem>
-#include <QGraphicsScene>
 
-
-//#include "jsonparser.h"
+#include <QListView>
+#include <QStringListModel>
+#include <QAbstractTableModel>
+#include <QDesktopServices>
+#include <QGraphicsDropShadowEffect>
 
 
 namespace Ui {
@@ -33,19 +33,21 @@ private:
         QVector<QString> adr;
         bool inout; //true - in, false - out;
         qulonglong sum;
-        int date;
-        QGraphicsRectItem *rectangle;
+        uint date;
     };
     QVector<wallet> inoutWallet;
+    QVector<wallet> inWallet;
+    QVector<wallet> outWallet;
 private slots:
     void on_pushButton_clicked();
-    void on_pushButton_2_clicked();
+    void showSelectedItemIN(QModelIndex index);
+    void showSelectedItemOUT(QModelIndex index);
+    void showSelectedItemAddress(QModelIndex index);
 public slots:
     void onTXR(QVector<QString> *temp);
     void onTXS(QVector<QString> *temp);
     void onTA(QVector<QString> *tempMyWallet, QVector<QString> *adr, bool inout, QVector<qulonglong> *sum, int date);
-protected:
-   virtual void mousePressEvent(QMouseEvent *event);
+
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *networkManager;
@@ -53,10 +55,9 @@ private:
     QString adrText;
     int numTX;
     int curTX;
-    void selected();
-    void ris();
-
-
+    int numTrans;
+    void paintWallet();
+    void removeVector();
 };
 
 

@@ -7,7 +7,12 @@
 #include <QSslSocket>
 #include <QSsl>
 #include <QVector>
-#include "address.h"
+
+#include <QListView>
+#include <QStringListModel>
+#include <QAbstractTableModel>
+#include <QDesktopServices>
+#include <QGraphicsDropShadowEffect>
 
 
 namespace Ui {
@@ -21,21 +26,40 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+private:
+    QVector<QString> myWallet;
 
+    struct wallet{
+        QVector<QString> adr;
+        bool inout; //true - in, false - out;
+        qulonglong sum;
+        uint date;
+    };
+    QVector<wallet> inoutWallet;
+    QVector<wallet> inWallet;
+    QVector<wallet> outWallet;
 private slots:
     void on_pushButton_clicked();
-    void onResult(QNetworkReply *reply);
-    void on_pushButton_2_clicked();
+    void showSelectedItemIN(QModelIndex index);
+    void showSelectedItemOUT(QModelIndex index);
+    void showSelectedItemAddress(QModelIndex index);
 public slots:
-    void onTXR(QVector<Address> *temp);
-    void onTXS(QVector<Address> *temp);
+    void onTXR(QVector<QString> *temp);
+    void onTXS(QVector<QString> *temp);
+    void onTA(QVector<QString> *tempMyWallet, QVector<QString> *adr, bool inout, QVector<qulonglong> *sum, int date);
 
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *networkManager;
-    QVector<Address> AData;
-    QVector<Address> *txData;
+    QVector<QString> txData;
     QString adrText;
+    int numTX;
+    int curTX;
+    int numTrans;
+    void paintWallet();
+    void removeVector();
 };
+
+
 
 #endif // MAINWINDOW_H
